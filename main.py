@@ -11,7 +11,6 @@ from humanize import naturalsize
 
 class WrongFileType(ValueError):
     pass
-
 # UTILIDAD
 def read_image(imgpath):
     if (str(imgpath.name).lower().find("jpg") != -1) or (str(imgpath).find("png") != -1):
