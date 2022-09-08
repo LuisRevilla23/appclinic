@@ -115,9 +115,9 @@ def dcm_visualization(dcm_file,st_container,is_bytes=True,key_slider="slider"):
 def clasificacion(dcm_file,st_container):
     pred=prediccion(modelo2,dcm_file,device)
     if pred[0] ==1:
-        st.markdown("<h1 style='text-align: center; color: white;'>Predicción: Edema</h1>", unsafe_allow_html=True)
+        st_container.markdown("<h2 style='color: white;'>Edema</h2>", unsafe_allow_html=True)
     else:
-        st.markdown("<h1 style='text-align: center; color: white;'>Predicción: No Edema</h1>", unsafe_allow_html=True)
+        st_container.markdown("<h2 style='color: white;'>No Edema</h2>", unsafe_allow_html=True)
 
 
 def guardarpng(dcm_file):
@@ -181,7 +181,7 @@ with tab2:
         st.session_state.file_to_predict= ""
 
     # Definir columnas
-    colms = st.columns([2,2,1,1,1,6,1])
+    colms = st.columns([2,2,1,1,2,5])
     # Definir los encabezados de columna
     fields = ["Archivo", 'Tamaño', '👁', '⬇',"Predicción"]
     for col, field_name in zip(colms, fields):
@@ -232,6 +232,6 @@ with tab2:
 
     # Plotear la imagen si está definido el Path
     if st.session_state.file_to_predict != "":
-        clasificacion(st.session_state.file_to_predict,colms[6])
+        clasificacion(st.session_state.file_to_predict,colms[4])
     else:
-        colms[6].empty()
+        colms[4].empty()
