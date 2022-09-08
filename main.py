@@ -138,7 +138,6 @@ def png_visualization(dcm_file,st_container):
     image_stream.seek(0)
     file_bytes = np.asarray(bytearray(image_stream.read()), dtype=np.uint8)
     img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
-    print(img.shape)
 
     fig, ax = plt.subplots()
     plt.axis('off')
