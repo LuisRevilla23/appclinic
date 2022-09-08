@@ -9,7 +9,7 @@ import numpy as np
 import os
 from humanize import naturalsize
 
-
+import SimpleITK as sitk
 #para red
 #@title **C. IMPORTANDO LIBRERIAS**
 import torch
@@ -121,7 +121,7 @@ def clasificacion(dcm_file,st_container):
 
 
 def guardarpng(dcm_file):
-    if str(uploaded_file.name).lower().find("dcm") != -1:
+    if str(dcm_file.name).lower().find("dcm") != -1:
         dataset = pydicom.dcmread(io.BytesIO(dcm_file.getvalue()))
         arr=dataset.pixel_array
         cv2.imwrite(os.path.join("images/png/"+uploaded_file.name[:-4]+".png"),arr)
@@ -130,7 +130,7 @@ def guardarpng(dcm_file):
         image_stream.seek(0)
         file_bytes = np.asarray(bytearray(image_stream.read()), dtype=np.uint8)
         img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
-        cv2.imwrite(os.path.join("images/png/"+uploaded_file.name),img)
+        cv2.imwrite(os.path.join("images/png/"+uploaded_file.name[:-4]+".png"),img)
 
 
 def png_visualization(dcm_file,st_container):
@@ -145,6 +145,14 @@ def png_visualization(dcm_file,st_container):
     
     ax.imshow(img, cmap="gray")
     st_container.pyplot(fig=fig)
+
+def image_to_dcm_converter(image_file):
+    image_stream = io.BytesIO(image_file.getvalue())
+    image_stream.seek(0)
+    file_bytes = np.asarray(bytearray(image_stream.read()), dtype=np.uint8)
+    img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
+    img = sitk.GetImageFromArray(img)
+    sitk.WriteImage(img, "images/saved/"+image_file.name[:-4]+".dcm")
 
 # ------------------------------------------------------------------
 
@@ -173,7 +181,7 @@ with tab1:
         with tab1_col1:
             # CARGA DE ARCHIVOS
             st.header("Carga de archivos DICOM")
-            uploaded_file = st.file_uploader("Seleccione un archivo .DCM")
+            uploaded_file = st.file_uploader("Seleccione un archivo .DCM .jpg o .png", type=["dcm","jpg","png"])
             if uploaded_file is not None:
                 button_guardar=st.empty()
 
@@ -188,6 +196,7 @@ with tab1:
                         st.success("Archivo guardado")
                     else:
                         guardarpng(uploaded_file)
+                        image_to_dcm_converter(uploaded_file)
                         st.success("Archivo guardado")
 
 
@@ -202,11 +211,9 @@ with tab1:
                 # visualizar dcm file
                 if str(uploaded_file.name).lower().find("dcm") != -1:
                     dcm_visualization(uploaded_file,st)
-                elif (str(uploaded_file.name).lower().find("jpg") != -1) or (str(uploaded_file.name).lower().find("png") != -1):
-                   png_visualization(uploaded_file,st)
                 else:
-                    click_guardar = button_guardar.button("Guardar", disabled=True, key='2')
-                    st.write("No es un archivo DCM o imagen.")
+                   png_visualization(uploaded_file,st)
+           
 
 with tab2:
     # DESCARGA
@@ -247,7 +254,7 @@ with tab2:
         button_download = colms[3].empty()  # crear placeholder
         if file.lower().find(".dcm") != -1:
             with open(files_path+"/"+file, 'rb') as f:
-                click_download = button_download.download_button('Descargar', f, file_name='archivo.dmc',key='down_'+file)
+                click_download = button_download.download_button('Descargar', f, file_name='archivo.dcm',key='down_'+file)
         else:
             button_download.write("-")
         
