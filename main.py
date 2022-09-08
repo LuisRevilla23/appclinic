@@ -121,10 +121,30 @@ def clasificacion(dcm_file,st_container):
 
 
 def guardarpng(dcm_file):
-    dataset = pydicom.dcmread(io.BytesIO(dcm_file.getvalue()))
-    arr=dataset.pixel_array
-    cv2.imwrite(os.path.join("images/png/"+uploaded_file.name[:-4]+".png"),arr)
+    if str(uploaded_file.name).lower().find("dcm") != -1:
+        dataset = pydicom.dcmread(io.BytesIO(dcm_file.getvalue()))
+        arr=dataset.pixel_array
+        cv2.imwrite(os.path.join("images/png/"+uploaded_file.name[:-4]+".png"),arr)
+    else:
+        image_stream = io.BytesIO(dcm_file.getvalue())
+        image_stream.seek(0)
+        file_bytes = np.asarray(bytearray(image_stream.read()), dtype=np.uint8)
+        img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
+        cv2.imwrite(os.path.join("images/png/"+uploaded_file.name),img)
 
+
+def png_visualization(dcm_file,st_container):
+    image_stream = io.BytesIO(dcm_file.getvalue())
+    image_stream.seek(0)
+    file_bytes = np.asarray(bytearray(image_stream.read()), dtype=np.uint8)
+    img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
+    print(img.shape)
+
+    fig, ax = plt.subplots()
+    plt.axis('off')
+    
+    ax.imshow(img, cmap="gray")
+    st_container.pyplot(fig=fig)
 
 # ------------------------------------------------------------------
 
@@ -155,21 +175,38 @@ with tab1:
             st.header("Carga de archivos DICOM")
             uploaded_file = st.file_uploader("Seleccione un archivo .DCM")
             if uploaded_file is not None:
-                if st.button('Guardar'): 
-                    guardarpng(uploaded_file)
-                    #Saving upload
-                    with open("images/saved/"+uploaded_file.name,"wb") as f:
-                        f.write((uploaded_file).getbuffer())
-                    st.success("Archivo guardado")
+                button_guardar=st.empty()
+
+                click_guardar = button_guardar.button("Guardar", disabled=False, key='1')
+                if click_guardar:
+                #if st.button('Guardar'): 
+                    if str(uploaded_file.name).lower().find("dcm") != -1:
+                        guardarpng(uploaded_file)
+                        #Saving upload
+                        with open("images/saved/"+uploaded_file.name,"wb") as f:
+                            f.write((uploaded_file).getbuffer())
+                        st.success("Archivo guardado")
+                    else:
+                        guardarpng(uploaded_file)
+                        st.success("Archivo guardado")
+
+
+
 
         with tab1_col2:
             # Condicional: Si la imagen está cargada
             if uploaded_file is not None:
                 st.header("Visualización de imagen")
                 # Leer la imagen
-                imgdef = read_image(uploaded_file)
+                #imgdef = read_image(uploaded_file)
                 # visualizar dcm file
-                dcm_visualization(uploaded_file,st)
+                if str(uploaded_file.name).lower().find("dcm") != -1:
+                    dcm_visualization(uploaded_file,st)
+                elif (str(uploaded_file.name).lower().find("jpg") != -1) or (str(uploaded_file.name).lower().find("png") != -1):
+                   png_visualization(uploaded_file,st)
+                else:
+                    click_guardar = button_guardar.button("Guardar", disabled=True, key='2')
+                    st.write("No es un archivo DCM o imagen.")
 
 with tab2:
     # DESCARGA
