@@ -174,7 +174,7 @@ tab1, tab2= st.tabs(["Carga", "Descarga"])
 # Definir path de la imagen a mostrar
 with tab1:
     # CARGA
-    tab1_col1, tab1_col2 = st.columns([2,3])
+    tab1_col1, tab1_col2 = st.columns([2,2])
 
     with st.container():
         with tab1_col1:
