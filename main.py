@@ -170,7 +170,7 @@ st.set_page_config(
 st.title("INTERMED")
 st.subheader('Administración de archivos DICOM')
 # PESTAÑAS
-tab1, tab2, tab3 = st.tabs(["Carga", "Descarga","Convertidor a png"])
+tab1, tab2= st.tabs(["Carga", "Descarga"])
 # Definir path de la imagen a mostrar
 with tab1:
     # CARGA
