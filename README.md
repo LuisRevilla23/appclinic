@@ -3,14 +3,14 @@
 Curso: Aplicaciones clinicas en señales e imágenes
 ## Integrantes
 
-Emilio Ochoa
-Luis Revilla
-Luis Leon
-Jose Montoya
-Adriana Romero
+Emilio Ochoa\
+Luis Revilla\
+Luis Leon\
+Jose Montoya\
+Adriana Romero\
 Javier Condor
 
-##Descripcion
+## Descripcion
 El sistema implementa un visor de imagenes medicas utilizando streamlit y a su vez un clasificador de imagenes.
 
 
