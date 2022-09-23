@@ -46,15 +46,45 @@ from network_transfer import NetworkTransferLearning
 from prediccion_pytorch import prediccion
 import glob
 import cv2
+from pynetdicom import AE, debug_logger
+from pynetdicom.sop_class import CTImageStorage,MultiFrameGrayscaleByteSecondaryCaptureImageStorage
+
+debug_logger()
+
+# Initialise the Application Entity
+ae = AE(ae_title=b'MY_STORAGE_SCU')
+
+# Add a requested presentation context
+ae.add_requested_context(MultiFrameGrayscaleByteSecondaryCaptureImageStorage)
+
+
+
 
 model_t = 'vit_base_patch8_224'#'resnet101d'
 modelo2 = NetworkTransferLearning.load_from_checkpoint("D:/emilio/epoch=0-valid_loss=0.000.ckpt", type_net=model_t, num_classes = 2)
 #modelo2=modelo2.cuda()
 
 
-filename=glob.glob("D:/app_senales/dataset2/test/edema/*")
+filename=glob.glob("C:/Users/Emilio/OneDrive/app_senales/dataset2/test/edema/*")
 device="cpu"
 pred=prediccion(modelo2,filename[1],device)
+
+
+
+
+import streamlit as st
+
+def local_css(file_name):
+    with open(file_name) as f:
+        st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+
+def remote_css(url):
+    st.markdown(f'<link href="{url}" rel="stylesheet">', unsafe_allow_html=True)    
+
+def icon(icon_name):
+    st.markdown(f'<i class="material-icons">{icon_name}</i>', unsafe_allow_html=True)
+
+
 
 
 
@@ -153,6 +183,33 @@ def image_to_dcm_converter(image_file):
     img = sitk.GetImageFromArray(img)
     sitk.WriteImage(img, "images/saved/"+image_file.name[:-4]+".dcm")
 
+
+def subir_imagen(dcm_file):
+    # Read in our DICOM CT dataset
+    ds = pydicom.dcmread(io.BytesIO(dcm_file.getvalue()))
+    print(ds.pixel_array.shape)
+    ds.pixel_array=np.zeros((3,369,320))
+    # Associate with peer AE at IP 127.0.0.1 and port 11112
+    assoc = ae.associate('216.238.69.235', 11112, ae_title=b'DCM4CHEE')
+    if assoc.is_established:
+        # Use the C-STORE service to send the dataset
+        # returns the response status as a pydicom Dataset
+        status = assoc.send_c_store(ds)
+
+        # Check the status of the storage request
+        if status:
+            # If the storage request succeeded this will be 0x0000
+            print('C-STORE request status: 0x{0:04x}'.format(status.Status))
+        else:
+            print('Connection timed out, was aborted or received invalid response')
+
+        # Release the association
+        assoc.release()
+    else:
+        print('Association rejected, aborted or never connected')
+
+
+
 # ------------------------------------------------------------------
 
 # CONFIGURACION DE LA PAGINA
@@ -192,6 +249,7 @@ with tab1:
                         #Saving upload
                         with open("images/saved/"+uploaded_file.name,"wb") as f:
                             f.write((uploaded_file).getbuffer())
+                        subir_imagen(uploaded_file)
                         st.success("Archivo guardado")
                     else:
                         guardarpng(uploaded_file)
@@ -223,6 +281,28 @@ with tab2:
     if 'file_to_predict' not in st.session_state:
         st.session_state.file_to_predict= ""
 
+
+    #local_css("style.css")
+    #remote_css('https://fonts.googleapis.com/icon?family=Material+Icons')
+
+    #icon("search")
+
+    # Definir la ruta de archivos a mostrar
+    files_path = 'images/saved'
+    files_path_predict='images/png'
+    files = os.listdir(files_path)
+    # Mostrar los archivos disponibles
+
+
+    tab2_col1, tab2_col2 = st.columns([5,2])
+    with st.container():
+        with tab2_col1:
+            selected = st.text_input( "Ingrese paciente")
+        with tab2_col2:
+            button_clicked = st.button("Buscar")
+    if button_clicked:
+        print(files_path+'/'+str(selected))
+        #files=files_path+'/'+str(selected)
     # Definir columnas
     colms = st.columns([2,2,1,1,2,5])
     # Definir los encabezados de columna
@@ -230,11 +310,7 @@ with tab2:
     for col, field_name in zip(colms, fields):
         # header
         col.subheader(field_name)
-    # Definir la ruta de archivos a mostrar
-    files_path = 'images/saved'
-    files_path_predict='images/png'
-    files = os.listdir(files_path)
-    # Mostrar los archivos disponibles
+   
     for file in files:
         # Nombre
         colms[0].write(file)
@@ -278,3 +354,6 @@ with tab2:
         clasificacion(st.session_state.file_to_predict,colms[4])
     else:
         colms[4].empty()
+
+
+
