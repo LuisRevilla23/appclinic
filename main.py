@@ -61,13 +61,13 @@ ae.add_requested_context(MultiFrameGrayscaleByteSecondaryCaptureImageStorage)
 
 
 model_t = 'vit_base_patch8_224'#'resnet101d'
-modelo2 = NetworkTransferLearning.load_from_checkpoint("D:/emilio/epoch=0-valid_loss=0.000.ckpt", type_net=model_t, num_classes = 2)
+#modelo2 = NetworkTransferLearning.load_from_checkpoint("D:/emilio/epoch=0-valid_loss=0.000.ckpt", type_net=model_t, num_classes = 2)
 #modelo2=modelo2.cuda()
 
 
-filename=glob.glob("C:/Users/Emilio/OneDrive/app_senales/dataset2/test/edema/*")
+#filename=glob.glob("C:/Users/Emilio/OneDrive/app_senales/dataset2/test/edema/*")
 device="cpu"
-pred=prediccion(modelo2,filename[1],device)
+#pred=prediccion(modelo2,filename[1],device)
 
 
 
@@ -142,12 +142,12 @@ def dcm_visualization(dcm_file,st_container,is_bytes=True,key_slider="slider"):
         st_container.write(WrongFileType("No es un archivo DCM o imagen."))
         raise st_container.stop()
 
-def clasificacion(dcm_file,st_container):
+""" def clasificacion(dcm_file,st_container):
     pred=prediccion(modelo2,dcm_file,device)
     if pred[0] ==1:
         st_container.markdown("<h2 style='color: white;'>Edema</h2>", unsafe_allow_html=True)
     else:
-        st_container.markdown("<h2 style='color: white;'>No Edema</h2>", unsafe_allow_html=True)
+        st_container.markdown("<h2 style='color: white;'>No Edema</h2>", unsafe_allow_html=True) """
 
 
 def guardarpng(dcm_file):
@@ -349,11 +349,11 @@ with tab2:
     else:
         colms[5].empty()
 
-    # Plotear la imagen si está definido el Path
+"""     # Plotear la imagen si está definido el Path
     if st.session_state.file_to_predict != "":
         clasificacion(st.session_state.file_to_predict,colms[4])
     else:
-        colms[4].empty()
+        colms[4].empty() """
 
 
 
